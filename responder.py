@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import os
+import time
 from google import genai
 from google.genai import types
 
@@ -21,23 +22,24 @@ Rules:
 - Never break character or mention that this is a simulation, AI, or that you know it's a scam.
 """
 
-def generate_scam_response(scam_text: str) -> str:
-    """
-    Given the text of a detected scam email, generates a time-wasting,
-    non-committal reply in the persona of a confused target.
-    """
-    try:
-        prompt = f"Here is the scam email you received:\n\n{scam_text}\n\nWrite your confused reply:"
-        response = client.models.generate_content(
-            model="gemini-3.6-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT
+def generate_scam_response(scam_text: str, retries: int = 2) -> str:
+    prompt = f"Here is the scam email you received:\n\n{scam_text}\n\nWrite your confused reply:"
+
+    for attempt in range(retries + 1):
+        try:
+            response = client.models.generate_content(
+                model="gemini-3.5-flash-lite",
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=SYSTEM_PROMPT
+                )
             )
-        )
-        return response.text.strip()
-    except Exception as e:
-        return f"[Error generating response: {e}]"
+            return response.text.strip()
+        except Exception as e:
+            if attempt < retries:
+                time.sleep(2)  # brief pause before retrying
+                continue
+            return f"[Error generating response after {retries + 1} attempts: {e}]"
 
 
 if __name__ == "__main__":
