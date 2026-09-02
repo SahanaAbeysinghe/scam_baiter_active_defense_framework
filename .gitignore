@@ -219,3 +219,7 @@ __marimo__/
 
 *.csv
 *.pkl
+!models/*.pkl
+.env
+venv/
+__pycache__/
