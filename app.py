@@ -3,7 +3,11 @@ import streamlit.components.v1 as components
 import requests
 import sys
 import json
+import os
 from datetime import datetime
+
+
+BASE_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
 
 if __name__ == "__main__":
     try:
@@ -783,7 +787,7 @@ def render_detection_view():
             st.session_state.last_error = "Please paste or type email content before initiating the scan."
             st.session_state.last_result = None
         else:
-            api_url = "http://127.0.0.1:8000/scan"
+            api_url = f"{BASE_URL}/scan"
             payload = {"email_text": cleaned}
             with st.spinner("Classifying email vector & preparing active countermeasures..."):
                 try:
@@ -796,8 +800,8 @@ def render_detection_view():
                         st.session_state.last_result = None
                 except requests.exceptions.ConnectionError:
                     st.session_state.last_error = (
-                        "CONNECTION_REFUSED: Could not connect to FastAPI backend at http://127.0.0.1:8000. "
-                        "Please run `uvicorn main:app --reload` in your terminal."
+                        f"CONNECTION_REFUSED: Could not connect to FastAPI backend at {BASE_URL}. "
+                        "Please ensure the backend service is running."
                     )
                     st.session_state.last_result = None
                 except requests.exceptions.Timeout:
@@ -817,14 +821,13 @@ def render_detection_view():
 
         if st.session_state.last_error:
             if "CONNECTION_REFUSED" in st.session_state.last_error:
-                st.markdown("""
+                st.markdown(f"""
                 <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.45); border-radius: 12px; padding: 20px;">
                     <div style="color: #fbbf24; font-weight: 700; font-size: 1.05rem; margin-bottom: 6px;">⚠️ FastAPI Backend Server Offline</div>
                     <div style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.6;">
-                        The interface cannot bridge to <code>http://127.0.0.1:8000/scan</code>.<br>
-                        Please start the FastAPI service in a separate terminal:
+                        The interface cannot bridge to <code>{BASE_URL}/scan</code>.<br>
+                        Please ensure the FastAPI service or Docker container is actively running.
                     </div>
-                    <pre style="background: #050807; padding: 10px 14px; border-radius: 8px; margin-top: 10px; color: #4ade80; font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; border: 1px solid rgba(74, 222, 128, 0.2);">uvicorn main:app --reload</pre>
                 </div>
                 """, unsafe_allow_html=True)
             else:
@@ -956,23 +959,22 @@ def render_history_view():
     with top_col2:
         if st.button("🗑️ Clear History", use_container_width=True):
             try:
-                requests.delete("http://127.0.0.1:8000/history", timeout=10)
+                requests.delete(f"{BASE_URL}/history", timeout=10)
             except requests.exceptions.RequestException:
                 pass
             st.rerun()
 
     try:
-        resp = requests.get("http://127.0.0.1:8000/history", params={"limit": 200}, timeout=15)
+        resp = requests.get(f"{BASE_URL}/history", params={"limit": 200}, timeout=15)
         resp.raise_for_status()
         records = resp.json()
     except requests.exceptions.ConnectionError:
-        st.markdown("""
+        st.markdown(f"""
         <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.45); border-radius: 12px; padding: 20px; max-width: 900px; margin: 0 auto;">
             <div style="color: #fbbf24; font-weight: 700; font-size: 1.05rem; margin-bottom: 6px;">⚠️ FastAPI Backend Server Offline</div>
             <div style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.6;">
-                Can't reach <code>http://127.0.0.1:8000/history</code>. Start the backend with:
+                Can't reach <code>{BASE_URL}/history</code>. Please ensure the backend service or Docker container is actively running.
             </div>
-            <pre style="background: #050807; padding: 10px 14px; border-radius: 8px; margin-top: 10px; color: #4ade80; font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; border: 1px solid rgba(74, 222, 128, 0.2);">uvicorn main:app --reload</pre>
         </div>
         """, unsafe_allow_html=True)
         return
