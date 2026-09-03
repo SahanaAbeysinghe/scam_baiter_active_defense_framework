@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ed5fe354-91f3-45ab-9796-b903826e0ad6",
+    "timestamp": "2026-09-03T04:57:48.439182+00:00",
+    "email_text": "URGENT: Your bank account access has been restricted due to suspicious activity. Please verify your credentials immediately at http://secure-banking-update.cc within 24 hours to prevent permanent account closure.",
+    "is_scam": true,
+    "label": "Phishing/Scam",
+    "generated_reply": "Oh goodness, restricted?! Is this about my checking account or the savings one with the little blue card my grandson gave me? Also I tried to click that blue writing thingy in your message, but my screen just made a funny beep and went black for a second—is my computer broken?"
+  },
+  {
+    "id": "f5769f32-f30c-4ef0-b509-d23512924649",
+    "timestamp": "2026-09-03T04:57:54.179149+00:00",
+    "email_text": "Hi Sahana, just following up on our project milestones for this week. The updated evaluation results look great. Let's touch base tomorrow at 11:00 AM.",
+    "is_scam": false,
+    "label": "Legitimate",
+    "generated_reply": null
+  }
+]
